@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { DM_Mono, DM_Sans, Playfair_Display } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { DM_Mono, DM_Sans, Playfair_Display, Yatra_One } from "next/font/google";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -23,9 +23,22 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+const yatraOne = Yatra_One({
+  subsets: ["devanagari", "latin"],
+  weight: "400",
+  variable: "--font-yatra-one",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Dil Se Safar",
   description: "A cinematic Indian auto-rickshaw music experience.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 const youtubeIframeApiSrc = "https://www.youtube.com/iframe_api";
@@ -36,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${dmMono.variable} ${playfair.variable}`}
+      className={`${dmSans.variable} ${dmMono.variable} ${playfair.variable} ${yatraOne.variable}`}
     >
       <head>
         <link rel="preconnect" href="https://www.youtube.com" />

@@ -8,6 +8,7 @@
   --font-sans: var(--font-dm-sans), sans-serif;
   --font-mono: var(--font-dm-mono), monospace;
   --font-display: var(--font-playfair), serif;
+  --font-hindi: var(--font-yatra-one), serif;
   --animate-spin-vinyl: spin-vinyl 9s linear infinite;
 
   @keyframes spin-vinyl {
@@ -87,7 +88,7 @@
   }
 
   .progress-range {
-    @apply h-[3px] w-full cursor-pointer appearance-none rounded-full accent-cream;
+    @apply h-[2px] w-full cursor-pointer appearance-none rounded-full accent-cream;
     background: linear-gradient(
       to right,
       var(--color-cream) 0 var(--progress),
@@ -95,11 +96,25 @@
     );
   }
 
+  @media (pointer: coarse) {
+    .progress-range {
+      @apply h-1;
+    }
+
+    .progress-range::-webkit-slider-thumb {
+      @apply h-3 w-3;
+    }
+
+    .progress-range::-moz-range-thumb {
+      @apply h-3 w-3;
+    }
+  }
+
   .progress-range::-webkit-slider-thumb {
-    @apply h-2.5 w-2.5 appearance-none rounded-full bg-cream;
+    @apply h-2 w-2 appearance-none rounded-full bg-cream;
   }
 
   .progress-range::-moz-range-thumb {
-    @apply h-2.5 w-2.5 rounded-full border-0 bg-cream;
+    @apply h-2 w-2 rounded-full border-0 bg-cream;
   }
 }
