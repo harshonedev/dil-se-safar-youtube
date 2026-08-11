@@ -37,6 +37,18 @@
   a {
     -webkit-tap-highlight-color: transparent;
   }
+
+  button:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed;
+  }
+
+  a {
+    @apply cursor-pointer;
+  }
 }
 
 @layer components {
