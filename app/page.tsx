@@ -18,6 +18,9 @@ type YouTubePlayer = {
   previousVideo: () => void;
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   setVolume: (volume: number) => void;
+  mute: () => void;
+  unMute: () => void;
+  isMuted: () => boolean;
   getCurrentTime: () => number;
   getDuration: () => number;
   getPlayerState: () => number;
@@ -85,6 +88,7 @@ export default function Home() {
   const playerRef = useRef<YouTubePlayer | null>(null);
   const progressTimer = useRef<number | null>(null);
   const apiReadyRef = useRef(false);
+  const awaitingSoundUnlock = useRef(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -115,6 +119,61 @@ export default function Home() {
     return () => window.clearInterval(id);
   }, []);
 
+  function ensureIframeAutoplayPermissions(container: HTMLElement) {
+    const iframe = container.querySelector("iframe");
+    if (!iframe) return;
+
+    iframe.setAttribute(
+      "allow",
+      "autoplay; encrypted-media; fullscreen; picture-in-picture"
+    );
+  }
+
+  function tryAutoplay(player: YouTubePlayer) {
+    player.setVolume(volume);
+    player.unMute();
+    player.playVideo();
+
+    window.setTimeout(() => {
+      if (!playerRef.current || playerRef.current !== player) return;
+
+      const state = player.getPlayerState();
+      const playing =
+        state === window.YT?.PlayerState.PLAYING ||
+        state === window.YT?.PlayerState.BUFFERING;
+
+      if (playing) {
+        awaitingSoundUnlock.current = false;
+        return;
+      }
+
+      player.mute();
+      player.playVideo();
+      awaitingSoundUnlock.current = true;
+    }, 400);
+  }
+
+  function unlockSound() {
+    const player = playerRef.current;
+    if (!player || !awaitingSoundUnlock.current) return;
+
+    player.unMute();
+    player.setVolume(volume);
+    player.playVideo();
+    awaitingSoundUnlock.current = false;
+  }
+
+  useEffect(() => {
+    const unlockOnInteraction = () => unlockSound();
+    document.addEventListener("pointerdown", unlockOnInteraction);
+    document.addEventListener("keydown", unlockOnInteraction);
+
+    return () => {
+      document.removeEventListener("pointerdown", unlockOnInteraction);
+      document.removeEventListener("keydown", unlockOnInteraction);
+    };
+  }, [volume]);
+
   useEffect(() => {
     const scriptId = "youtube-iframe-api";
     let cancelled = false;
@@ -138,6 +197,7 @@ export default function Home() {
           fs: 0,
           iv_load_policy: 3,
           modestbranding: 1,
+          mute: 0,
           playsinline: 1,
           rel: 0,
           ...(typeof window !== "undefined"
@@ -149,9 +209,9 @@ export default function Home() {
         events: {
           onReady: (event) => {
             if (cancelled) return;
+            ensureIframeAutoplayPermissions(element);
             setPlayerReady(true);
-            event.target.setVolume(volume);
-            event.target.playVideo();
+            tryAutoplay(event.target);
             syncNowPlaying();
             startProgressLoop();
           },
@@ -202,6 +262,7 @@ export default function Home() {
       playerRef.current?.destroy?.();
       playerRef.current = null;
       apiReadyRef.current = false;
+      awaitingSoundUnlock.current = false;
       window.onYouTubeIframeAPIReady = undefined;
       setPlayerReady(false);
       setIsPlaying(false);
@@ -236,6 +297,7 @@ export default function Home() {
   }
 
   function play() {
+    unlockSound();
     playerRef.current?.playVideo();
   }
 
@@ -266,6 +328,10 @@ export default function Home() {
   function changeVolume(value: number) {
     setVolume(value);
     playerRef.current?.setVolume(value);
+    if (value > 0) {
+      playerRef.current?.unMute();
+      awaitingSoundUnlock.current = false;
+    }
   }
 
   return (

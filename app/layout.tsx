@@ -28,6 +28,8 @@ export const metadata: Metadata = {
   description: "A cinematic Indian auto-rickshaw music experience.",
 };
 
+const youtubeIframeApiSrc = "https://www.youtube.com/iframe_api";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -36,6 +38,11 @@ export default function RootLayout({
       lang="en"
       className={`${dmSans.variable} ${dmMono.variable} ${playfair.variable}`}
     >
+      <head>
+        <link rel="preconnect" href="https://www.youtube.com" />
+        <link rel="preconnect" href="https://www.google.com" />
+        <script src={youtubeIframeApiSrc} async />
+      </head>
       <body className="min-h-full bg-[#713923] font-sans text-cream antialiased">
         {children}
       </body>
